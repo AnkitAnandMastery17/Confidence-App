@@ -1,20 +1,78 @@
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+
+// Screen imports
+import OnboardingIdentityScreen from './app/screens/OnboardingIdentityScreen';
+import OnboardingBeliefScreen from './app/screens/OnboardingBeliefScreen';
+import HomeScreen from './app/screens/HomeScreen';
+import CheckinScreen from './app/screens/CheckinScreen';
+import ProgressScreen from './app/screens/ProgressScreen';
+import PaywallScreen from './app/screens/PaywallScreen';
+
+// Types for navigation
+export type RootStackParamList = {
+  OnboardingIdentity: undefined;
+  OnboardingBelief: undefined;
+  Home: undefined;
+  Checkin: undefined;
+  Progress: undefined;
+  Paywall: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <StatusBar style="light" />
+      <Stack.Navigator
+        initialRouteName="OnboardingIdentity"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#0F172A',
+          },
+          headerTintColor: '#F8FAFC',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+          contentStyle: {
+            backgroundColor: '#0F172A',
+          },
+        }}
+      >
+        <Stack.Screen
+          name="OnboardingIdentity"
+          component={OnboardingIdentityScreen}
+          options={{ title: 'Identity' }}
+        />
+        <Stack.Screen
+          name="OnboardingBelief"
+          component={OnboardingBeliefScreen}
+          options={{ title: 'Belief' }}
+        />
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ title: 'Home' }}
+        />
+        <Stack.Screen
+          name="Checkin"
+          component={CheckinScreen}
+          options={{ title: 'Daily Check-in' }}
+        />
+        <Stack.Screen
+          name="Progress"
+          component={ProgressScreen}
+          options={{ title: 'Your Progress' }}
+        />
+        <Stack.Screen
+          name="Paywall"
+          component={PaywallScreen}
+          options={{ title: 'Premium Upgrade' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
