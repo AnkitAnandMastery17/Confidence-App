@@ -18,7 +18,7 @@ export type RootStackParamList = {
   OnboardingIdentity: undefined;
   OnboardingBelief: undefined;
   Home: undefined;
-  Checkin: undefined;
+  Checkin: { dayNumber: number };
   Progress: undefined;
   Paywall: undefined;
 };

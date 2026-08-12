@@ -33,6 +33,75 @@ export interface Database {
           updated_at?: string;
         };
       };
+      content_templates: {
+        Row: {
+          belief_category_id: string;
+          affirmation_1: string;
+          affirmation_2: string;
+          affirmation_3: string;
+          challenge: string;
+          visualization_script: string;
+        };
+        Insert: {
+          belief_category_id: string;
+          affirmation_1: string;
+          affirmation_2: string;
+          affirmation_3: string;
+          challenge: string;
+          visualization_script: string;
+        };
+        Update: {
+          belief_category_id?: string;
+          affirmation_1?: string;
+          affirmation_2?: string;
+          affirmation_3?: string;
+          challenge?: string;
+          visualization_script?: string;
+        };
+      };
+      daily_content: {
+        Row: {
+          user_id: string;
+          day_number: number;
+          affirmation_1: string;
+          affirmation_2: string;
+          affirmation_3: string;
+          challenge: string;
+          visualization_script: string;
+        };
+        Insert: {
+          user_id: string;
+          day_number: number;
+          affirmation_1: string;
+          affirmation_2: string;
+          affirmation_3: string;
+          challenge: string;
+          visualization_script: string;
+        };
+        Update: {
+          user_id?: string;
+          day_number?: number;
+          affirmation_1?: string;
+          affirmation_2?: string;
+          affirmation_3?: string;
+          challenge?: string;
+          visualization_script?: string;
+        };
+      };
+      streaks: {
+        Row: {
+          user_id: string;
+          current_streak: number;
+        };
+        Insert: {
+          user_id: string;
+          current_streak?: number;
+        };
+        Update: {
+          user_id?: string;
+          current_streak?: number;
+        };
+      };
     };
   };
 }
