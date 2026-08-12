@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
 // Screen imports
+import AuthScreen from './app/screens/AuthScreen';
 import OnboardingIdentityScreen from './app/screens/OnboardingIdentityScreen';
 import OnboardingBeliefScreen from './app/screens/OnboardingBeliefScreen';
 import HomeScreen from './app/screens/HomeScreen';
@@ -13,6 +14,7 @@ import PaywallScreen from './app/screens/PaywallScreen';
 
 // Types for navigation
 export type RootStackParamList = {
+  Auth: undefined;
   OnboardingIdentity: undefined;
   OnboardingBelief: undefined;
   Home: undefined;
@@ -28,7 +30,7 @@ export default function App() {
     <NavigationContainer>
       <StatusBar style="light" />
       <Stack.Navigator
-        initialRouteName="OnboardingIdentity"
+        initialRouteName="Auth"
         screenOptions={{
           headerStyle: {
             backgroundColor: '#0F172A',
@@ -43,14 +45,19 @@ export default function App() {
         }}
       >
         <Stack.Screen
+          name="Auth"
+          component={AuthScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="OnboardingIdentity"
           component={OnboardingIdentityScreen}
-          options={{ title: 'Identity' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="OnboardingBelief"
           component={OnboardingBeliefScreen}
-          options={{ title: 'Belief' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Home"
