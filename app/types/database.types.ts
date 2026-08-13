@@ -33,6 +33,29 @@ export interface Database {
           updated_at?: string;
         };
       };
+      checkins: {
+        Row: {
+          user_id: string;
+          day_number: number;
+          challenge_completed: boolean;
+          reflection_text: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          day_number: number;
+          challenge_completed: boolean;
+          reflection_text?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          day_number?: number;
+          challenge_completed?: boolean;
+          reflection_text?: string | null;
+          created_at?: string;
+        };
+      };
       content_templates: {
         Row: {
           belief_category_id: string;
@@ -92,14 +115,20 @@ export interface Database {
         Row: {
           user_id: string;
           current_streak: number;
+          longest_streak: number;
+          last_checkin_date: string | null;
         };
         Insert: {
           user_id: string;
           current_streak?: number;
+          longest_streak?: number;
+          last_checkin_date?: string | null;
         };
         Update: {
           user_id?: string;
           current_streak?: number;
+          longest_streak?: number;
+          last_checkin_date?: string | null;
         };
       };
     };

@@ -62,12 +62,12 @@ export default function App() {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Home' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Checkin"
           component={CheckinScreen}
-          options={{ title: 'Daily Check-in' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Progress"
