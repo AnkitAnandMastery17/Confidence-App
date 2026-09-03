@@ -224,7 +224,7 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         {/* Header Area */}
         <Animated.View
           style={[
@@ -329,7 +329,7 @@ export default function HomeScreen() {
               <Animated.View style={[styles.visualPulse, { transform: [{ scale: pulseAnim }] }]} />
             )}
           </View>
-          
+
           <Text style={styles.visualizationScript}>
             "{content.visualization_script}"
           </Text>

@@ -51,10 +51,10 @@ export default function CheckinScreen() {
         if (profile?.program_start_date) {
           const start = new Date(profile.program_start_date);
           const today = new Date();
-          
+
           const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
           const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-          
+
           const diffTime = todayDate.getTime() - startDate.getTime();
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
           setDayNumber(Math.max(1, diffDays + 1));
@@ -138,12 +138,12 @@ export default function CheckinScreen() {
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          
+
           {/* Header Close Link */}
           <View style={styles.headerRow}>
             <Text style={styles.dayText}>Day {dayNumber} Check-in</Text>
-            <Pressable 
-              onPress={() => navigation.goBack()} 
+            <Pressable
+              onPress={() => navigation.goBack()}
               style={styles.closeButton}
               disabled={loading}
             >
