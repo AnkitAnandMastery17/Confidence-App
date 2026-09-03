@@ -15,6 +15,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { supabase } from '../lib/supabase';
+import { theme } from '../theme';
+import { GeometricLogoMark } from '../components/Icons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Auth'>;
 
@@ -27,7 +29,6 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Check if session is already active on load
   useEffect(() => {
     const checkActiveSession = async () => {
       setLoading(true);
@@ -47,11 +48,11 @@ export default function AuthScreen() {
 
   const handleSessionRouting = async (userId: string) => {
     try {
-      const { data: profile, error } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('onboarding_completed')
         .eq('id', userId)
-        .maybeSingle(); // maybeSingle returns null if no row matches instead of throwing a 406 error
+        .maybeSingle();
 
       if (profile?.onboarding_completed) {
         navigation.reset({
@@ -65,7 +66,6 @@ export default function AuthScreen() {
         });
       }
     } catch (err) {
-      // Default to onboarding if database check fails
       navigation.reset({
         index: 0,
         routes: [{ name: 'OnboardingIdentity' }],
@@ -84,7 +84,6 @@ export default function AuthScreen() {
 
     try {
       if (isSignUp) {
-        // Sign Up Flow
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -101,7 +100,6 @@ export default function AuthScreen() {
           setErrorMessage('Signup successful! Please check your email to confirm registration.');
         }
       } else {
-        // Sign In Flow
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -130,7 +128,7 @@ export default function AuthScreen() {
           
           {/* Header Title */}
           <View style={styles.headerContainer}>
-            <View style={styles.logoDot} />
+            <GeometricLogoMark size={28} color={theme.colors.primary} style={{ marginBottom: 16 }} />
             <Text style={styles.title}>Confidence</Text>
             <Text style={styles.subtitle}>
               {isSignUp
@@ -142,11 +140,11 @@ export default function AuthScreen() {
           {/* Form */}
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email Address</Text>
+              <Text style={styles.label}>Email address</Text>
               <TextInput
                 style={styles.input}
                 placeholder="you@example.com"
-                placeholderTextColor="#64748B"
+                placeholderTextColor={theme.colors.textMuted}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -161,7 +159,7 @@ export default function AuthScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="••••••••"
-                placeholderTextColor="#64748B"
+                placeholderTextColor={theme.colors.textMuted}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -189,7 +187,7 @@ export default function AuthScreen() {
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="#0F172A" />
+                <ActivityIndicator color={theme.colors.textOnPrimary} />
               ) : (
                 <Text style={styles.buttonText}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
               )}
@@ -219,7 +217,7 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Slate 900
+    backgroundColor: theme.colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -227,110 +225,96 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 40,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.xl,
   },
   headerContainer: {
     alignItems: 'center',
-    marginBottom: 40,
-  },
-  logoDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#38BDF8', // Soft sky blue core logo anchor
-    marginBottom: 16,
+    marginBottom: theme.spacing.xl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#F8FAFC', // Slate 50
+    fontSize: theme.typography.sizes.screenTitle,
+    fontFamily: theme.typography.fontFamilyHeadline,
+    color: theme.colors.textPrimary,
     letterSpacing: -0.5,
-    marginBottom: 10,
+    marginBottom: theme.spacing.xs,
   },
   subtitle: {
-    fontSize: 15,
-    color: '#94A3B8', // Slate 400
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
-    maxWidth: 280,
+    lineHeight: theme.typography.lineHeights.body,
+    maxWidth: 290,
   },
   formContainer: {
     width: '100%',
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: theme.spacing.md,
   },
   label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#94A3B8',
-    marginBottom: 8,
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
+    fontWeight: '500',
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
   },
   input: {
     height: 52,
-    backgroundColor: '#1E293B', // Slate 800
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    color: '#F8FAFC',
-    fontSize: 15,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
     borderWidth: 1,
-    borderColor: '#334155', // Slate 700
+    borderColor: theme.colors.border,
   },
   errorBanner: {
-    backgroundColor: '#451A1A',
-    borderColor: '#7F1D1D',
+    backgroundColor: theme.colors.errorBg,
+    borderColor: theme.colors.errorBorder,
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 20,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   errorText: {
-    color: '#FCA5A5',
-    fontSize: 13,
-    lineHeight: 18,
+    color: theme.colors.errorText,
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
+    lineHeight: theme.typography.lineHeights.secondary,
   },
   button: {
     height: 54,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 27,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 3,
-      },
-      web: {
-        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-      },
-    }),
+    marginTop: theme.spacing.xs,
+    ...theme.shadows.button,
   },
   buttonDisabled: {
     opacity: 0.5,
   },
   buttonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.92,
+    transform: [{ scale: 0.99 }],
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#0F172A',
+    color: theme.colors.textOnPrimary,
   },
   toggleLink: {
-    marginTop: 24,
+    marginTop: theme.spacing.md,
     alignItems: 'center',
   },
   toggleText: {
-    fontSize: 14,
-    color: '#38BDF8', // Highlight active cyan toggle
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.primary,
     fontWeight: '500',
   },
 });

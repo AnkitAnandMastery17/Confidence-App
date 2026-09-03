@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { supabase } from '../lib/supabase';
+import { theme } from '../theme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'OnboardingBelief'>;
 
@@ -52,14 +53,12 @@ export default function OnboardingBeliefScreen() {
     setErrorMessage(null);
 
     try {
-      // 1. Get current authenticated user
       const { data: { user }, error: authError } = await supabase.auth.getUser();
 
       if (authError || !user) {
         throw new Error('No authenticated user found. Please sign in to save your progress.');
       }
 
-      // 2. Update/Upsert the profile row
       const todayISO = new Date().toISOString();
       const { error: dbError } = await supabase
         .from('profiles')
@@ -76,7 +75,6 @@ export default function OnboardingBeliefScreen() {
         throw new Error(dbError.message);
       }
 
-      // 3. Reset stack and navigate to Home on success
       navigation.reset({
         index: 0,
         routes: [{ name: 'Home' }],
@@ -111,7 +109,6 @@ export default function OnboardingBeliefScreen() {
                 onPress={() => setSelectedId(option.id)}
                 disabled={loading}
               >
-                {/* Custom Radio Button */}
                 <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
                   {isSelected && <View style={styles.radioInner} />}
                 </View>
@@ -132,7 +129,7 @@ export default function OnboardingBeliefScreen() {
           <TextInput
             style={styles.textInput}
             placeholder="e.g. This shows up most at work, or in dating, or with family"
-            placeholderTextColor="#64748B" // Slate 500
+            placeholderTextColor={theme.colors.textMuted}
             multiline
             numberOfLines={4}
             value={contextText}
@@ -162,7 +159,7 @@ export default function OnboardingBeliefScreen() {
             disabled={!selectedId || loading}
           >
             {loading ? (
-              <ActivityIndicator color="#0F172A" />
+              <ActivityIndicator color={theme.colors.textOnPrimary} />
             ) : (
               <Text style={styles.buttonText}>Continue</Text>
             )}
@@ -176,150 +173,147 @@ export default function OnboardingBeliefScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Slate 900
+    backgroundColor: theme.colors.background,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 48,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
   },
   headerContainer: {
-    marginBottom: 28,
+    marginBottom: theme.spacing.lg,
   },
   headline: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    lineHeight: 34,
-    marginBottom: 8,
+    fontSize: theme.typography.sizes.screenTitle,
+    fontFamily: theme.typography.fontFamilyHeadline,
+    color: theme.colors.textPrimary,
+    lineHeight: theme.typography.lineHeights.screenTitle,
+    marginBottom: theme.spacing.xs,
   },
   subtext: {
-    fontSize: 15,
-    color: '#94A3B8',
-    lineHeight: 22,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textSecondary,
+    lineHeight: theme.typography.lineHeights.body,
   },
   optionsContainer: {
-    gap: 12,
-    marginBottom: 32,
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.lg,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B', // Slate 800
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
     borderWidth: 1,
-    borderColor: '#334155', // Slate 700
-    gap: 12,
+    borderColor: theme.colors.border,
+    gap: 14,
+    ...theme.shadows.card,
   },
   cardSelected: {
-    borderColor: '#38BDF8', // Soft sky blue active border
-    backgroundColor: '#1E293B',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#38BDF8',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0px 0px 8px rgba(56, 189, 248, 0.15)',
-      },
-    }),
+    borderColor: theme.colors.borderSelected,
+    backgroundColor: theme.colors.surfaceAlt,
   },
   radioOuter: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#64748B', // Slate 500
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioOuterSelected: {
-    borderColor: '#38BDF8',
+    borderColor: theme.colors.primary,
   },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#38BDF8',
+    backgroundColor: theme.colors.primary,
   },
   cardText: {
-    fontSize: 14,
-    color: '#CBD5E1', // Slate 300
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textSecondary,
     flex: 1,
-    lineHeight: 20,
+    lineHeight: theme.typography.lineHeights.body,
   },
   cardTextSelected: {
-    color: '#F8FAFC', // Slate 50
+    color: theme.colors.textPrimary,
     fontWeight: '500',
   },
   inputContainer: {
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: theme.spacing.xs,
   },
   inputLabel: {
-    fontSize: 13,
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '500',
-    color: '#94A3B8',
+    color: theme.colors.textSecondary,
+    flex: 1,
+    marginRight: 8,
   },
   charCount: {
-    fontSize: 11,
-    color: '#64748B',
+    fontSize: theme.typography.sizes.caption,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textMuted,
   },
   textInput: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 14,
-    color: '#F8FAFC',
-    fontSize: 14,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
     borderWidth: 1,
-    borderColor: '#334155',
-    minHeight: 90,
+    borderColor: theme.colors.border,
+    minHeight: 100,
   },
   errorContainer: {
-    backgroundColor: '#451A1A',
-    borderColor: '#7F1D1D',
+    backgroundColor: theme.colors.errorBg,
+    borderColor: theme.colors.errorBorder,
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 24,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   errorText: {
-    color: '#FCA5A5',
-    fontSize: 13,
-    lineHeight: 18,
+    color: theme.colors.errorText,
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
+    lineHeight: theme.typography.lineHeights.secondary,
   },
   buttonContainer: {
     alignItems: 'center',
   },
   button: {
     width: '100%',
-    height: 56,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 28,
+    height: 54,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
+    ...theme.shadows.button,
   },
   buttonDisabled: {
     opacity: 0.4,
   },
   buttonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.92,
+    transform: [{ scale: 0.99 }],
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#0F172A',
+    color: theme.colors.textOnPrimary,
   },
 });

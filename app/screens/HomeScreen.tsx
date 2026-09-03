@@ -16,6 +16,14 @@ import * as Speech from 'expo-speech';
 import { RootStackParamList } from '../../App';
 import { useDailyContent } from '../hooks/useDailyContent';
 import { useStreak } from '../hooks/useStreak';
+import { supabase } from '../lib/supabase';
+import { theme } from '../theme';
+import {
+  GeometricLogoMark,
+  AffirmationIcon,
+  VisualizationIcon,
+  ChallengeIcon,
+} from '../components/Icons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -27,9 +35,80 @@ export default function HomeScreen() {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isPaused, setIsPaused] = useState<boolean>(false);
 
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  // Subtle entrance animations for cards
+  const fadeAnimHeader = useRef(new Animated.Value(0)).current;
+  const slideAnimHeader = useRef(new Animated.Value(12)).current;
+
+  const fadeAnimCard1 = useRef(new Animated.Value(0)).current;
+  const slideAnimCard1 = useRef(new Animated.Value(16)).current;
+
+  const fadeAnimCard2 = useRef(new Animated.Value(0)).current;
+  const slideAnimCard2 = useRef(new Animated.Value(16)).current;
+
+  const fadeAnimCard3 = useRef(new Animated.Value(0)).current;
+  const slideAnimCard3 = useRef(new Animated.Value(16)).current;
 
   // Pulse animation loop when speech is playing
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const isLoading = contentLoading || streakLoading;
+
+  // Trigger staggered entrance animations once content loads
+  useEffect(() => {
+    if (!isLoading && content) {
+      Animated.stagger(80, [
+        Animated.parallel([
+          Animated.timing(fadeAnimHeader, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnimHeader, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(fadeAnimCard1, {
+            toValue: 1,
+            duration: 220,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnimCard1, {
+            toValue: 0,
+            duration: 220,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(fadeAnimCard2, {
+            toValue: 1,
+            duration: 220,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnimCard2, {
+            toValue: 0,
+            duration: 220,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(fadeAnimCard3, {
+            toValue: 1,
+            duration: 220,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnimCard3, {
+            toValue: 0,
+            duration: 220,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+    }
+  }, [isLoading, content]);
+
   useEffect(() => {
     let animationLoop: Animated.CompositeAnimation | null = null;
 
@@ -37,7 +116,7 @@ export default function HomeScreen() {
       animationLoop = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 1.3,
+            toValue: 1.25,
             duration: 900,
             useNativeDriver: true,
           }),
@@ -60,7 +139,6 @@ export default function HomeScreen() {
     };
   }, [isSpeaking, isPaused]);
 
-  // Clean up speech on unmount
   useEffect(() => {
     return () => {
       Speech.stop();
@@ -108,13 +186,19 @@ export default function HomeScreen() {
     setIsPaused(false);
   };
 
-  const isLoading = contentLoading || streakLoading;
+  // Helper for greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#38BDF8" />
-        <Text style={styles.loadingText}>Preparing today's program...</Text>
+        <ActivityIndicator size="small" color={theme.colors.primary} />
+        <Text style={styles.loadingText}>Preparing today's practice...</Text>
       </SafeAreaView>
     );
   }
@@ -123,9 +207,9 @@ export default function HomeScreen() {
     return (
       <SafeAreaView style={styles.centerContainer}>
         <View style={styles.errorCard}>
-          <Text style={styles.errorTitle}>Daily content unavailable</Text>
+          <Text style={styles.errorTitle}>Daily practice unavailable</Text>
           <Text style={styles.errorSub}>
-            {contentError || "We couldn't load today's program. Please try again later."}
+            {contentError || "We couldn't load today's content. Please check back shortly."}
           </Text>
         </View>
       </SafeAreaView>
@@ -134,75 +218,176 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Background Soft Subtle Texture Effect */}
+      <View style={styles.bgTextureOverlay} pointerEvents="none">
+        <View style={styles.bgGlowCircle} />
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* Header Section */}
-        <View style={styles.header}>
-          <Text style={styles.dayTitle}>Day {dayNumber}</Text>
-          {currentStreak > 0 && (
-            <View style={styles.streakBadge}>
-              <Text style={styles.streakDot}>🔥</Text>
-              <Text style={styles.streakText}>{currentStreak} day streak</Text>
+        {/* Header Area */}
+        <Animated.View
+          style={[
+            styles.headerArea,
+            {
+              opacity: fadeAnimHeader,
+              transform: [{ translateY: slideAnimHeader }],
+            },
+          ]}
+        >
+          <View style={styles.brandRowContainer}>
+            <View style={styles.brandRow}>
+              <GeometricLogoMark size={22} color={theme.colors.primary} />
+              <Text style={styles.greetingText}>{getGreeting()}</Text>
             </View>
-          )}
-        </View>
 
-        {/* Affirmations Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>TODAY'S AFFIRMATIONS</Text>
+            {/* Quick Action Navigation Header Icons */}
+            <View style={styles.headerActions}>
+              <Pressable
+                style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+                onPress={() => navigation.navigate('Progress')}
+              >
+                <Text style={styles.iconBtnText}>📊</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+                onPress={async () => {
+                  await supabase.auth.signOut();
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Auth' }],
+                  });
+                }}
+              >
+                <Text style={styles.iconBtnText}>🚪</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={styles.metaRow}>
+            <Text style={styles.metaDayText}>Day {dayNumber}</Text>
+            {currentStreak > 0 && (
+              <>
+                <Text style={styles.metaDotSeparator}>•</Text>
+                <Text style={styles.metaStreakText}>
+                  {currentStreak} {currentStreak === 1 ? 'day' : 'days'} of showing up
+                </Text>
+              </>
+            )}
+          </View>
+        </Animated.View>
+
+        {/* Card 1: Affirmations Card */}
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              opacity: fadeAnimCard1,
+              transform: [{ translateY: slideAnimCard1 }],
+            },
+          ]}
+        >
+          <View style={styles.cardHeaderRow}>
+            <AffirmationIcon size={16} color={theme.colors.primary} />
+            <Text style={styles.cardLabel}>TODAY'S AFFIRMATIONS</Text>
+          </View>
+
           <View style={styles.affirmationList}>
             <View style={styles.affirmationRow}>
-              <Text style={styles.affirmationNumber}>1</Text>
+              <Text style={styles.affirmationNumber}>01</Text>
               <Text style={styles.affirmationText}>{content.affirmation_1}</Text>
             </View>
             <View style={styles.affirmationDivider} />
             <View style={styles.affirmationRow}>
-              <Text style={styles.affirmationNumber}>2</Text>
+              <Text style={styles.affirmationNumber}>02</Text>
               <Text style={styles.affirmationText}>{content.affirmation_2}</Text>
             </View>
             <View style={styles.affirmationDivider} />
             <View style={styles.affirmationRow}>
-              <Text style={styles.affirmationNumber}>3</Text>
+              <Text style={styles.affirmationNumber}>03</Text>
               <Text style={styles.affirmationText}>{content.affirmation_3}</Text>
             </View>
           </View>
-        </View>
+        </Animated.View>
 
-        {/* Visualization Script Card */}
-        <View style={styles.card}>
-          <View style={styles.visualizationHeader}>
-            <Text style={styles.cardLabel}>VISUALIZATION PRACTICE</Text>
+        {/* Card 2: Visualization Script Card */}
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              opacity: fadeAnimCard2,
+              transform: [{ translateY: slideAnimCard2 }],
+            },
+          ]}
+        >
+          <View style={styles.cardHeaderRow}>
+            <View style={styles.headerLeftIconRow}>
+              <VisualizationIcon size={16} color={theme.colors.primary} />
+              <Text style={styles.cardLabel}>VISUALIZATION PRACTICE</Text>
+            </View>
             {isSpeaking && !isPaused && (
               <Animated.View style={[styles.visualPulse, { transform: [{ scale: pulseAnim }] }]} />
             )}
           </View>
           
           <Text style={styles.visualizationScript}>
-            {content.visualization_script}
+            "{content.visualization_script}"
           </Text>
 
           <View style={styles.audioControls}>
             {!isSpeaking || isPaused ? (
-              <Pressable style={styles.audioButton} onPress={handlePlaySpeech}>
-                <Text style={styles.audioButtonText}>{isPaused ? 'Resume' : 'Listen'}</Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.audioButtonPrimary,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={handlePlaySpeech}
+              >
+                <Text style={styles.audioButtonPrimaryText}>
+                  {isPaused ? 'Resume listening' : 'Listen to practice'}
+                </Text>
               </Pressable>
             ) : (
-              <Pressable style={[styles.audioButton, styles.pauseButton]} onPress={handlePauseSpeech}>
-                <Text style={styles.pauseButtonText}>Pause</Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.audioButtonSecondary,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={handlePauseSpeech}
+              >
+                <Text style={styles.audioButtonSecondaryText}>Pause</Text>
               </Pressable>
             )}
 
             {isSpeaking && (
-              <Pressable style={styles.stopButton} onPress={handleStopSpeech}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.stopButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={handleStopSpeech}
+              >
                 <Text style={styles.stopButtonText}>Stop</Text>
               </Pressable>
             )}
           </View>
-        </View>
+        </Animated.View>
 
-        {/* Challenge Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>TODAY'S CHALLENGE</Text>
+        {/* Card 3: Challenge Card */}
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              opacity: fadeAnimCard3,
+              transform: [{ translateY: slideAnimCard3 }],
+            },
+          ]}
+        >
+          <View style={styles.cardHeaderRow}>
+            <ChallengeIcon size={16} color={theme.colors.primary} />
+            <Text style={styles.cardLabel}>TODAY'S ACTION</Text>
+          </View>
+
           <Text style={styles.challengeText}>
             {content.challenge}
           </Text>
@@ -214,9 +399,9 @@ export default function HomeScreen() {
             ]}
             onPress={() => navigation.navigate('Checkin', { dayNumber })}
           >
-            <Text style={styles.actionButtonText}>I did this</Text>
+            <Text style={styles.actionButtonText}>Complete today's check-in</Text>
           </Pressable>
-        </View>
+        </Animated.View>
 
       </ScrollView>
     </SafeAreaView>
@@ -226,107 +411,157 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Slate 900
+    backgroundColor: theme.colors.background,
+  },
+  bgTextureOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  bgGlowCircle: {
+    position: 'absolute',
+    top: -120,
+    right: -100,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: '#F0E6D8',
+    opacity: 0.45,
   },
   centerContainer: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: theme.colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: theme.spacing.md,
   },
   loadingText: {
-    marginTop: 16,
-    color: '#94A3B8', // Slate 400
-    fontSize: 15,
+    marginTop: theme.spacing.sm,
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
   },
   errorCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: theme.colors.border,
     alignItems: 'center',
+    maxWidth: 320,
   },
   errorTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    marginBottom: 8,
+    fontSize: theme.typography.sizes.cardTitle,
+    fontFamily: theme.typography.fontFamilyHeadline,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.xs,
   },
   errorSub: {
-    fontSize: 14,
-    color: '#94A3B8',
+    fontSize: theme.typography.sizes.secondary,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: theme.typography.lineHeights.secondary,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 40,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
   },
-  header: {
+
+  // Header styles
+  headerArea: {
+    marginBottom: theme.spacing.lg,
+  },
+  brandRowContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 8,
   },
-  dayTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    letterSpacing: -0.5,
-  },
-  streakBadge: {
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: '#334155',
+    gap: 10,
   },
-  streakDot: {
-    marginRight: 4,
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconBtnText: {
     fontSize: 14,
   },
-  streakText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#F8FAFC',
+  greetingText: {
+    fontSize: 14,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textSecondary,
+    letterSpacing: 0.3,
   },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  metaDayText: {
+    fontSize: theme.typography.sizes.screenTitle,
+    fontFamily: theme.typography.fontFamilyHeadline,
+    color: theme.colors.textPrimary,
+    letterSpacing: -0.5,
+  },
+  metaDotSeparator: {
+    marginHorizontal: 12,
+    fontSize: 14,
+    color: theme.colors.accentGold,
+  },
+  metaStreakText: {
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.accentGold,
+    fontWeight: '500',
+  },
+
+  // Card styles
   card: {
-    backgroundColor: '#1E293B', // Slate 800
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: '#334155', // Slate 700
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)',
-      },
-    }),
+    borderColor: theme.colors.border,
+    ...theme.shadows.card,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.sm,
+  },
+  headerLeftIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   cardLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#38BDF8', // Slate accent blue
+    fontSize: 12,
+    fontFamily: theme.typography.fontFamilyBody,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
     letterSpacing: 1.5,
-    marginBottom: 16,
+    marginLeft: 8,
   },
+
+  // Affirmations card
   affirmationList: {
-    gap: 16,
+    gap: theme.spacing.sm,
+    marginTop: 4,
   },
   affirmationRow: {
     flexDirection: 'row',
@@ -334,121 +569,120 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   affirmationNumber: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#64748B', // Slate 500
-    backgroundColor: '#0F172A',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    textAlign: 'center',
-    lineHeight: 22,
+    fontSize: 12,
+    fontFamily: theme.typography.fontFamilyBody,
+    fontWeight: '600',
+    color: theme.colors.accentGold,
+    marginTop: 2,
   },
   affirmationText: {
-    fontSize: 15,
-    color: '#E2E8F0', // Slate 200
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textPrimary,
     flex: 1,
-    lineHeight: 22,
+    lineHeight: theme.typography.lineHeights.body,
   },
   affirmationDivider: {
     height: 1,
-    backgroundColor: '#334155',
+    backgroundColor: theme.colors.border,
+    opacity: 0.6,
   },
-  visualizationHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
+
+  // Visualization card
   visualPulse: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#38BDF8',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.accentGold,
   },
   visualizationScript: {
-    fontSize: 15,
-    color: '#CBD5E1',
-    lineHeight: 24,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyHeadline,
+    color: theme.colors.textPrimary,
+    lineHeight: 28,
     fontStyle: 'italic',
-    marginBottom: 20,
+    marginBottom: theme.spacing.md,
+    marginTop: 4,
   },
   audioControls: {
     flexDirection: 'row',
-    gap: 12,
+    gap: theme.spacing.xs,
   },
-  audioButton: {
+  audioButtonPrimary: {
     flex: 1,
     height: 48,
-    backgroundColor: '#38BDF8',
-    borderRadius: 24,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  audioButtonText: {
-    fontSize: 14,
+  audioButtonPrimaryText: {
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#0F172A',
+    color: theme.colors.textOnPrimary,
   },
-  pauseButton: {
-    backgroundColor: '#334155',
+  audioButtonSecondary: {
+    flex: 1,
+    height: 48,
+    backgroundColor: theme.colors.surfaceAlt,
     borderWidth: 1,
-    borderColor: '#475569',
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  pauseButtonText: {
-    fontSize: 14,
+  audioButtonSecondaryText: {
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#F8FAFC',
+    color: theme.colors.textPrimary,
   },
   stopButton: {
-    width: 80,
+    width: 72,
     height: 48,
-    backgroundColor: '#0F172A',
-    borderRadius: 24,
+    backgroundColor: theme.colors.surfaceAlt,
+    borderRadius: theme.borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: theme.colors.border,
   },
   stopButtonText: {
-    fontSize: 14,
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#EF4444', // Red 500
+    color: theme.colors.errorText,
   },
+
+  // Challenge card
   challengeText: {
-    fontSize: 16,
-    color: '#F8FAFC',
-    lineHeight: 24,
-    marginBottom: 24,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textPrimary,
+    lineHeight: theme.typography.lineHeights.body,
+    marginBottom: theme.spacing.md,
+    marginTop: 4,
   },
   actionButton: {
     height: 52,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 26,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 2,
-      },
-      web: {
-        boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
-      },
-    }),
+    ...theme.shadows.button,
   },
   actionButtonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.92,
+    transform: [{ scale: 0.99 }],
   },
   actionButtonText: {
-    fontSize: 15,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#0F172A',
+    color: theme.colors.textOnPrimary,
+  },
+  buttonPressed: {
+    opacity: 0.9,
   },
 });

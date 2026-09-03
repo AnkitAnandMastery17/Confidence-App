@@ -33,14 +33,16 @@ export default function App() {
         initialRouteName="Auth"
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#0F172A',
+            backgroundColor: '#FAF7F2',
           },
-          headerTintColor: '#F8FAFC',
+          headerTintColor: '#2A2A2A',
           headerTitleStyle: {
-            fontWeight: 'bold',
+            fontFamily: 'Georgia',
+            fontWeight: '600',
+            fontSize: 18,
           },
           contentStyle: {
-            backgroundColor: '#0F172A',
+            backgroundColor: '#FAF7F2',
           },
         }}
       >

@@ -15,7 +15,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { supabase } from '../lib/supabase';
-import { calculateStreakUpdate, getLocalDateString } from '../hooks/useStreak';
+import { calculateStreakUpdate } from '../hooks/useStreak';
+import { theme } from '../theme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Checkin'>;
 type CheckinRouteProp = RouteProp<RootStackParamList, 'Checkin'>;
@@ -30,7 +31,6 @@ export default function CheckinScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // If dayNumber wasn't passed in params, calculate it from profile start date
   useEffect(() => {
     if (route.params?.dayNumber) {
       setDayNumber(route.params.dayNumber);
@@ -84,7 +84,6 @@ export default function CheckinScreen() {
       if (authError) throw authError;
       if (!user) throw new Error('No authenticated user session found.');
 
-      // 1. Save check-in record (Upsert because user can check in multiple times per day)
       const { error: checkinError } = await supabase
         .from('checkins')
         .upsert(
@@ -99,7 +98,6 @@ export default function CheckinScreen() {
 
       if (checkinError) throw checkinError;
 
-      // 2. Fetch current streak record to update it
       const { data: currentStreakRow, error: streakFetchError } = await supabase
         .from('streaks')
         .select('user_id, current_streak, longest_streak, last_checkin_date')
@@ -108,10 +106,8 @@ export default function CheckinScreen() {
 
       if (streakFetchError) throw streakFetchError;
 
-      // 3. Compute updated streak details
       const updatedStreak = calculateStreakUpdate(currentStreakRow, completed);
 
-      // 4. Save updated streak back
       const { error: streakUpdateError } = await supabase
         .from('streaks')
         .upsert(
@@ -124,7 +120,6 @@ export default function CheckinScreen() {
 
       if (streakUpdateError) throw streakUpdateError;
 
-      // 5. Navigate back to Home and reset the stack
       navigation.reset({
         index: 0,
         routes: [{ name: 'Home' }],
@@ -144,9 +139,9 @@ export default function CheckinScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           
-          {/* Custom Minimalist Header Close Link */}
+          {/* Header Close Link */}
           <View style={styles.headerRow}>
-            <Text style={styles.dayText}>Day {dayNumber} Practice</Text>
+            <Text style={styles.dayText}>Day {dayNumber} Check-in</Text>
             <Pressable 
               onPress={() => navigation.goBack()} 
               style={styles.closeButton}
@@ -169,26 +164,26 @@ export default function CheckinScreen() {
             <Pressable
               style={[
                 styles.toggleOption,
-                completed === true && styles.toggleOptionYesActive,
+                completed === true && styles.toggleOptionActive,
               ]}
               onPress={() => setCompleted(true)}
               disabled={loading}
             >
               <Text style={[styles.toggleText, completed === true && styles.toggleTextActive]}>
-                I did it
+                I completed today's action
               </Text>
             </Pressable>
 
             <Pressable
               style={[
                 styles.toggleOption,
-                completed === false && styles.toggleOptionNoActive,
+                completed === false && styles.toggleOptionActive,
               ]}
               onPress={() => setCompleted(false)}
               disabled={loading}
             >
               <Text style={[styles.toggleText, completed === false && styles.toggleTextActive]}>
-                I didn't get to it
+                I didn't get to it today
               </Text>
             </Pressable>
           </View>
@@ -201,8 +196,8 @@ export default function CheckinScreen() {
             </View>
             <TextInput
               style={styles.textInput}
-              placeholder="A win, a struggle, anything that stood out..."
-              placeholderTextColor="#64748B"
+              placeholder="A win, a struggle, or anything that stood out..."
+              placeholderTextColor={theme.colors.textMuted}
               multiline
               numberOfLines={6}
               value={reflection}
@@ -220,7 +215,7 @@ export default function CheckinScreen() {
             </View>
           )}
 
-          {/* Submit Action */}
+          {/* Save Action */}
           <View style={styles.buttonContainer}>
             <Pressable
               style={({ pressed }) => [
@@ -232,9 +227,9 @@ export default function CheckinScreen() {
               disabled={completed === null || loading}
             >
               {loading ? (
-                <ActivityIndicator color="#0F172A" />
+                <ActivityIndicator color={theme.colors.textOnPrimary} />
               ) : (
-                <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>Save entry</Text>
               )}
             </Pressable>
           </View>
@@ -248,27 +243,28 @@ export default function CheckinScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Slate 900
+    backgroundColor: theme.colors.background,
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: theme.spacing.lg,
   },
   dayText: {
-    fontSize: 12,
+    fontSize: theme.typography.sizes.caption,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#64748B',
+    color: theme.colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 1.5,
   },
@@ -278,103 +274,105 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
-    backgroundColor: '#1E293B',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: theme.colors.border,
   },
   closeText: {
-    color: '#94A3B8',
+    color: theme.colors.textSecondary,
     fontSize: 14,
-    fontWeight: '600',
   },
   titleContainer: {
-    marginBottom: 32,
+    marginBottom: theme.spacing.lg,
   },
   headline: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    marginBottom: 8,
+    fontSize: theme.typography.sizes.screenTitle,
+    fontFamily: theme.typography.fontFamilyHeadline,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.xs,
     letterSpacing: -0.5,
   },
   subtext: {
-    fontSize: 15,
-    color: '#94A3B8',
-    lineHeight: 22,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textSecondary,
+    lineHeight: theme.typography.lineHeights.body,
   },
   toggleContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 32,
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.lg,
   },
   toggleOption: {
-    flex: 1,
-    height: 60,
-    backgroundColor: '#1E293B',
-    borderRadius: 14,
+    height: 56,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: theme.colors.border,
+    paddingHorizontal: theme.spacing.md,
+    ...theme.shadows.card,
   },
-  toggleOptionYesActive: {
-    borderColor: '#0EA5E9', // Soft cyan active border
-    backgroundColor: '#0F2E4A', // Dark cyan tint background
-  },
-  toggleOptionNoActive: {
-    borderColor: '#64748B', // Low pressure slate active border
-    backgroundColor: '#1E293B',
+  toggleOptionActive: {
+    borderColor: theme.colors.borderSelected,
+    backgroundColor: theme.colors.surfaceAlt,
   },
   toggleText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#94A3B8',
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
+    fontWeight: '500',
+    color: theme.colors.textSecondary,
   },
   toggleTextActive: {
-    color: '#F8FAFC',
+    color: theme.colors.textPrimary,
+    fontWeight: '600',
   },
   inputContainer: {
-    marginBottom: 32,
+    marginBottom: theme.spacing.lg,
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: theme.spacing.xs,
   },
   inputLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#94A3B8',
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
+    fontWeight: '500',
+    color: theme.colors.textSecondary,
     flex: 1,
-    marginRight: 10,
+    marginRight: 8,
   },
   charCount: {
-    fontSize: 11,
-    color: '#64748B',
+    fontSize: theme.typography.sizes.caption,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textMuted,
   },
   textInput: {
-    backgroundColor: '#1E293B',
-    borderRadius: 14,
-    padding: 16,
-    color: '#F8FAFC',
-    fontSize: 15,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: theme.colors.border,
     minHeight: 120,
   },
   errorContainer: {
-    backgroundColor: '#451A1A',
-    borderColor: '#7F1D1D',
+    backgroundColor: theme.colors.errorBg,
+    borderColor: theme.colors.errorBorder,
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 24,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   errorText: {
-    color: '#FCA5A5',
-    fontSize: 13,
-    lineHeight: 18,
+    color: theme.colors.errorText,
+    fontSize: theme.typography.sizes.secondary,
+    fontFamily: theme.typography.fontFamilyBody,
+    lineHeight: theme.typography.lineHeights.secondary,
   },
   buttonContainer: {
     alignItems: 'center',
@@ -382,35 +380,23 @@ const styles = StyleSheet.create({
   saveButton: {
     width: '100%',
     height: 54,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 27,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 3,
-      },
-      web: {
-        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-      },
-    }),
+    ...theme.shadows.button,
   },
   saveButtonDisabled: {
     opacity: 0.4,
   },
   saveButtonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.92,
+    transform: [{ scale: 0.99 }],
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#0F172A',
+    color: theme.colors.textOnPrimary,
   },
 });

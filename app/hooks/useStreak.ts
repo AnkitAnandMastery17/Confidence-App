@@ -100,8 +100,14 @@ export function useStreak() {
           }
         }
       } catch (err: any) {
-        setError(err.message || 'Failed to fetch streak');
+        console.warn('Network error fetching streak, using local default:', err);
         setCurrentStreak(0);
+        setStreakData({
+          user_id: '',
+          current_streak: 0,
+          longest_streak: 0,
+          last_checkin_date: null,
+        });
       } finally {
         setLoading(false);
       }

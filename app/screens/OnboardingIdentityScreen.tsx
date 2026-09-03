@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
+import { theme } from '../theme';
+import { GeometricLogoMark } from '../components/Icons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'OnboardingIdentity'>;
 
@@ -13,12 +15,13 @@ export default function OnboardingIdentityScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Visual Element / Subtle Minimalist Anchor */}
+        {/* Header Indicator Anchor */}
         <View style={styles.indicatorContainer}>
-          <View style={styles.indicatorDot} />
+          <GeometricLogoMark size={16} color={theme.colors.accentGold} />
           <Text style={styles.indicatorText}>Identity Setup</Text>
         </View>
 
+        {/* Hero Copy */}
         <View style={styles.textContainer}>
           <Text style={styles.headline}>You're building Confidence.</Text>
           <Text style={styles.subtext}>
@@ -26,6 +29,7 @@ export default function OnboardingIdentityScreen() {
           </Text>
         </View>
 
+        {/* Action CTA */}
         <View style={styles.buttonContainer}>
           <Pressable
             style={({ pressed }) => [
@@ -45,32 +49,26 @@ export default function OnboardingIdentityScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Deep slate dark background
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 32,
+    paddingHorizontal: theme.spacing.lg,
     justifyContent: 'space-between',
-    paddingTop: 48,
-    paddingBottom: 48,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
   },
   indicatorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    opacity: 0.7,
-  },
-  indicatorDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#38BDF8', // Soft sky blue indicator
+    gap: theme.spacing.xs,
   },
   indicatorText: {
-    fontSize: 12,
+    fontSize: theme.typography.sizes.caption,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#94A3B8',
+    color: theme.colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 1.5,
   },
@@ -78,24 +76,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: theme.spacing.xl,
   },
   headline: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#F8FAFC',
+    fontSize: theme.typography.sizes.screenTitle,
+    fontFamily: theme.typography.fontFamilyHeadline,
+    color: theme.colors.textPrimary,
     textAlign: 'center',
     letterSpacing: -0.5,
-    lineHeight: 40,
-    marginBottom: 20,
+    lineHeight: theme.typography.lineHeights.screenTitle,
+    marginBottom: theme.spacing.md,
   },
   subtext: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#94A3B8',
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 26,
-    maxWidth: 290,
+    lineHeight: theme.typography.lineHeights.body,
+    maxWidth: 300,
   },
   buttonContainer: {
     width: '100%',
@@ -103,35 +101,23 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
-    maxWidth: 320,
+    maxWidth: 340,
     height: 56,
-    backgroundColor: '#F8FAFC', // Crisp soft white button
-    borderRadius: 28,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 3,
-      },
-      web: {
-        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-      },
-    }),
+    ...theme.shadows.button,
   },
   buttonPressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.92,
+    transform: [{ scale: 0.99 }],
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: theme.typography.sizes.body,
+    fontFamily: theme.typography.fontFamilyBody,
     fontWeight: '600',
-    color: '#0F172A', // Slate 900
+    color: theme.colors.textOnPrimary,
     letterSpacing: 0.2,
   },
 });
